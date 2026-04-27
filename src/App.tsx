@@ -22,17 +22,13 @@ export default function App() {
 
   useEffect(() => {
     const fetchTodos = async () => {
-      const { data } = await supabase
-        .from('todos')
-        .select('*')
-        .order('createdAt', { ascending: false });
+      const { data } = await supabase.from('todos').select('*').order('createdAt', { ascending: false });
       if (data) setTodos(data);
     };
 
     fetchTodos();
 
-    const channel = supabase
-      .channel('todos')
+    const channel = supabase.channel('todos')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'todos' }, fetchTodos)
       .subscribe();
 
@@ -40,49 +36,25 @@ export default function App() {
   }, []);
 
   const addTodo = async (text: string, priority: Priority, dueDate?: string) => {
-    const newTodo = {
-      text,
-      completed: false,
-      priority,
-      dueDate: dueDate || null,
-      createdAt: new Date().toISOString(),
-      completedAt: null,
-      subtasks: [],
-      reminder: null,
-      tags: [],
-      userId: currentUser,
-    };
+    const newTodo = { text, completed: false, priority, dueDate: dueDate || null, createdAt: new Date().toISOString(), completedAt: null, subtasks: [], reminder: null, tags: [], userId: currentUser };
     await supabase.from('todos').insert(newTodo);
   };
 
   const toggleTodo = async (id: string) => {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
-    await supabase
-      .from('todos')
-      .update({
-        completed: !todo.completed,
-        completedAt: !todo.completed ? new Date().toISOString() : null,
-      })
-      .eq('id', id);
+    await supabase.from('todos').update({ completed: !todo.completed, completedAt: !todo.completed ? new Date().toISOString() : null }).eq('id', id);
   };
 
-  const deleteTodo = async (id: string) => {
-    await supabase.from('todos').delete().eq('id', id);
-  };
+  const deleteTodo = async (id: string) => await supabase.from('todos').delete().eq('id', id);
 
-  const updateTodo = async (id: string, updates: Partial<Todo>) => {
-    await supabase.from('todos').update(updates).eq('id', id);
-  };
+  const updateTodo = async (id: string, updates: Partial<Todo>) => await supabase.from('todos').update(updates).eq('id', id);
 
-  const filteredTodos = todos.filter(todo =>
-    todo.text.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (selectedTags.length === 0 || selectedTags.every(tag => todo.tags?.includes(tag)))
+  const filteredTodos = todos.filter(todo => 
+    todo.text.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const sortedTodos = [...filteredTodos].sort((a, b) =>
-    a.completed === b.completed ? 0 : a.completed ? 1 : -1
-  );
+  const sortedTodos = [...filteredTodos].sort((a, b) => a.completed ? 1 : -1);
 
   return (
     <div className="min-h-screen py-12 px-6 bg-secondary-bg text-text-main">
@@ -116,8 +88,7 @@ export default function App() {
         <div className="relative">
           <Search className="absolute left-4 top-3.5 text-text-muted" size={20} />
           <input
-            type="text"
-            placeholder="Search tasks..."
+            type="text" placeholder="Search tasks..."
             className="w-full pl-12 pr-4 py-3 bg-primary-bg border border-border rounded-2xl focus:outline-none focus:border-accent"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -126,23 +97,11 @@ export default function App() {
 
         <div className="space-y-3">
           {sortedTodos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              onToggle={toggleTodo}
-              onDelete={deleteTodo}
-              onEdit={setEditingTodo}
-            />
+            <TodoItem key={todo.id} todo={todo} onToggle={toggleTodo} onDelete={deleteTodo} onEdit={setEditingTodo} />
           ))}
         </div>
 
-        {editingTodo && (
-          <EditTodoModal
-            todo={editingTodo}
-            onClose={() => setEditingTodo(null)}
-            onSave={updateTodo}
-          />
-        )}
+        {editingTodo && <EditTodoModal todo={editingTodo} onClose={() => setEditingTodo(null)} onSave={updateTodo} />}
       </div>
     </div>
   );
