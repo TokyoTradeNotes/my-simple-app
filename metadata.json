@@ -1,0 +1,6 @@
+{
+  "name": "TaskFlow",
+  "description": "A minimalist, high-performance todo application with smooth motion transitions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
