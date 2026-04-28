@@ -30,8 +30,8 @@ export default function EditTodoModal({ todo, isOpen, onClose, onSave }: EditTod
       onSave(todo.id, {
         text: text.trim(),
         priority,
-        dueDate: dueDate || undefined,
-        reminder: reminder || undefined,
+        dueDate: dueDate || null,
+        reminder: reminder || null,
         tags,
         subtasks,
       });

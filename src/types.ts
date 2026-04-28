@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 export type Priority = 'low' | 'medium' | 'high';
 
 export interface SubTask {
@@ -16,10 +11,11 @@ export interface Todo {
   text: string;
   completed: boolean;
   priority: Priority;
-  dueDate?: string;
-  completedAt?: number;
-  subtasks?: SubTask[];
-  reminder?: string;
-  tags?: string[];
-  createdAt: number;
+  dueDate: string | null;
+  completedAt: string | null;
+  subtasks: SubTask[];
+  reminder: string | null;
+  tags: string[];
+  createdAt: string;
+  createdBy: string;
 }
