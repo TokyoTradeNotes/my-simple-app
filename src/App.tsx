@@ -2,11 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutList, CheckCircle2, Search, Bell, X, Tag as TagIcon } from 'lucide-react';
 import { supabase } from './lib/supabase';
+import { logToSheet } from './lib/sheets';
 import { Todo, Priority } from './types';
 import TodoItem from './components/TodoItem';
 import AddTodo from './components/AddTodo';
 import EditTodoModal from './components/EditTodoModal';
 import UserSelect from './components/UserSelect';
+import CalendarPanel from './components/CalendarPanel';
+import PinGate from './components/PinGate';
 
 const USER_COLORS: Record<string, string> = {
   Tokyo: 'from-violet-500 to-indigo-600',
@@ -14,6 +17,7 @@ const USER_COLORS: Record<string, string> = {
 };
 
 export default function App() {
+  const [pinUnlocked, setPinUnlocked] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(() =>
     localStorage.getItem('family-todo-user')
   );
@@ -23,6 +27,7 @@ export default function App() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [activeNotification, setActiveNotification] = useState<Todo | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const notifiedReminders = useRef<Set<string>>(new Set());
 
   const handleSelectUser = (name: string) => {
@@ -112,7 +117,8 @@ export default function App() {
   }, []);
 
   const addTodo = async (text: string, priority: Priority, dueDate?: string) => {
-    await supabase.from('todos').insert({
+    const createdAt = new Date().toISOString();
+    const { data } = await supabase.from('todos').insert({
       text,
       completed: false,
       priority,
@@ -121,18 +127,42 @@ export default function App() {
       subtasks: [],
       reminder: null,
       tags: [],
-      createdAt: new Date().toISOString(),
+      createdAt,
       createdBy: currentUser,
-    });
+    }).select().single();
+
+    if (data) {
+      logToSheet({
+        id: data.id,
+        text,
+        priority,
+        dueDate: dueDate || null,
+        tags: [],
+        createdBy: currentUser!,
+        createdAt,
+        completedAt: null,
+        action: 'created',
+      });
+    }
   };
 
   const toggleTodo = async (id: string) => {
     const todo = todos.find((t) => t.id === id);
     if (!todo) return;
-    await supabase.from('todos').update({
-      completed: !todo.completed,
-      completedAt: !todo.completed ? new Date().toISOString() : null,
-    }).eq('id', id);
+    const nowCompleting = !todo.completed;
+    const completedAt = nowCompleting ? new Date().toISOString() : null;
+    await supabase.from('todos').update({ completed: nowCompleting, completedAt }).eq('id', id);
+    logToSheet({
+      id: todo.id,
+      text: todo.text,
+      priority: todo.priority,
+      dueDate: todo.dueDate,
+      tags: todo.tags || [],
+      createdBy: todo.createdBy,
+      createdAt: todo.createdAt,
+      completedAt,
+      action: nowCompleting ? 'completed' : 'uncompleted',
+    });
   };
 
   const deleteTodo = async (id: string) => {
@@ -142,6 +172,10 @@ export default function App() {
   const updateTodo = async (id: string, updates: Partial<Todo>) => {
     await supabase.from('todos').update(updates).eq('id', id);
   };
+
+  if (!pinUnlocked) {
+    return <PinGate onUnlock={() => setPinUnlocked(true)} />;
+  }
 
   if (!currentUser) {
     return <UserSelect onSelect={handleSelectUser} />;
@@ -154,7 +188,8 @@ export default function App() {
     const matchesSearch = todo.text.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTags =
       selectedTags.length === 0 || selectedTags.every((tag) => todo.tags?.includes(tag));
-    return matchesSearch && matchesTags;
+    const matchesDay = !selectedDay || todo.dueDate?.slice(0, 10) === selectedDay;
+    return matchesSearch && matchesTags && matchesDay;
   });
 
   const sortedTodos = [...filteredTodos].sort((a, b) => {
@@ -171,8 +206,10 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen py-12 px-6 sm:py-24 bg-secondary-bg text-text-main selection:bg-accent/30">
-      <div className="max-w-2xl mx-auto space-y-12">
+    <div className="min-h-screen py-12 px-6 sm:py-16 bg-secondary-bg text-text-main selection:bg-accent/30">
+      <div className="max-w-6xl mx-auto">
+      <div className="flex flex-col lg:flex-row gap-10 items-start">
+      <div className="flex-grow min-w-0 space-y-12">
 
         <header className="space-y-8">
           <div className="flex items-center justify-between">
@@ -334,6 +371,18 @@ export default function App() {
             Family Checklist &bull; {new Date().getFullYear()}
           </p>
         </footer>
+      </div>
+
+      {/* Calendar sidebar */}
+      <div className="lg:w-72 shrink-0 lg:sticky lg:top-16">
+        <CalendarPanel
+          todos={todos}
+          selectedDay={selectedDay}
+          onDaySelect={setSelectedDay}
+        />
+      </div>
+
+      </div>
       </div>
 
       {editingTodo && (

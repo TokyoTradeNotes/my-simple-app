@@ -60,16 +60,19 @@ export default function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemP
         )}
         
         {todo.completed && todo.completedAt && (
-          <div className="flex items-center gap-1.5 opacity-40">
-            <span className="text-[9px] uppercase tracking-wider font-bold text-text-muted">
-              Completed {new Date(todo.completedAt).toLocaleDateString('en-US', { 
-                month: 'short', 
+          <button
+            onClick={onEdit}
+            className="flex items-center gap-1.5 opacity-40 hover:opacity-70 transition-opacity group/time text-left"
+          >
+            <span className="text-[9px] uppercase tracking-wider font-bold text-text-muted group-hover/time:text-accent transition-colors">
+              Completed {new Date(todo.completedAt).toLocaleDateString('en-US', {
+                month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
               })}
             </span>
-          </div>
+          </button>
         )}
         
         {!todo.completed && (
@@ -118,15 +121,13 @@ export default function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemP
       </div>
 
       <div className="flex items-center gap-1">
-        {!todo.completed && (
-          <button
-            onClick={onEdit}
-            className="opacity-0 group-hover:opacity-100 p-2.5 text-text-muted hover:text-accent hover:bg-accent/10 rounded-xl transition-all"
-            aria-label="Edit task"
-          >
-            <Edit3 size={18} />
-          </button>
-        )}
+        <button
+          onClick={onEdit}
+          className="opacity-0 group-hover:opacity-100 p-2.5 text-text-muted hover:text-accent hover:bg-accent/10 rounded-xl transition-all"
+          aria-label="Edit task"
+        >
+          <Edit3 size={18} />
+        </button>
         <button
           onClick={() => onDelete(todo.id)}
           className="opacity-0 group-hover:opacity-100 p-2.5 text-text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"

@@ -5,8 +5,15 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Save, Calendar, AlertCircle, Plus, Trash2, CheckCircle2, Circle, Bell, Tag as TagIcon } from 'lucide-react';
+import { X, Save, Calendar, AlertCircle, Plus, Trash2, CheckCircle2, Circle, Bell, Tag as TagIcon, Clock } from 'lucide-react';
 import { Todo, Priority, SubTask } from '../types';
+
+const toDateTimeLocal = (iso: string | null) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
 interface EditTodoModalProps {
   todo: Todo;
@@ -24,6 +31,7 @@ export default function EditTodoModal({ todo, isOpen, onClose, onSave }: EditTod
   const [newTag, setNewTag] = useState('');
   const [subtasks, setSubtasks] = useState<SubTask[]>(todo.subtasks || []);
   const [newSubtaskText, setNewSubtaskText] = useState('');
+  const [completedAt, setCompletedAt] = useState(toDateTimeLocal(todo.completedAt));
 
   const handleSave = () => {
     if (text.trim()) {
@@ -34,6 +42,7 @@ export default function EditTodoModal({ todo, isOpen, onClose, onSave }: EditTod
         reminder: reminder || null,
         tags,
         subtasks,
+        ...(todo.completed && { completedAt: completedAt ? new Date(completedAt).toISOString() : todo.completedAt }),
       });
       onClose();
     }
@@ -251,7 +260,7 @@ export default function EditTodoModal({ todo, isOpen, onClose, onSave }: EditTod
                         className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-text-main focus:outline-none [color-scheme:dark] w-full"
                       />
                       {reminder && (
-                        <button 
+                        <button
                           onClick={() => setReminder('')}
                           className="ml-2 text-text-muted hover:text-rose-500 transition-colors"
                         >
@@ -260,6 +269,22 @@ export default function EditTodoModal({ todo, isOpen, onClose, onSave }: EditTod
                       )}
                     </div>
                   </div>
+
+                  {/* Completed At — only for completed tasks */}
+                  {todo.completed && (
+                    <div className="space-y-3 sm:col-span-2">
+                      <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-accent/60 pl-1">Completed At</label>
+                      <div className="relative flex items-center bg-secondary-bg rounded-xl border border-accent/20 px-4 py-2">
+                        <Clock size={16} className="text-accent mr-3 shrink-0" />
+                        <input
+                          type="datetime-local"
+                          value={completedAt}
+                          onChange={(e) => setCompletedAt(e.target.value)}
+                          className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-text-main focus:outline-none [color-scheme:dark] w-full"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
