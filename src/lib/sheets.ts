@@ -17,7 +17,7 @@ export async function logToSheet(payload: SheetPayload): Promise<void> {
   try {
     const url = new URL(SCRIPT_URL);
     url.searchParams.set('data', JSON.stringify(payload));
-    await fetch(url.toString(), { method: 'GET', mode: 'no-cors' });
+    await fetch(url.toString(), { method: 'GET' });
   } catch {
     // fire-and-forget — sheet sync failure never breaks the app
   }
