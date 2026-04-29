@@ -8,6 +8,11 @@ import { Check, Trash2, Circle, Edit3, Calendar, Bell, Tag as TagIcon } from 'lu
 import React from 'react';
 import { Todo } from '../types';
 
+const USER_COLORS: Record<string, string> = {
+  Tokyo: 'from-violet-500 to-indigo-600',
+  Hannah: 'from-pink-500 to-rose-500',
+};
+
 interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
@@ -59,24 +64,44 @@ export default function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemP
           </div>
         )}
         
-        {todo.completed && todo.completedAt && (
-          <button
-            onClick={onEdit}
-            className="flex items-center gap-1.5 opacity-40 hover:opacity-70 transition-opacity group/time text-left"
-          >
-            <span className="text-[9px] uppercase tracking-wider font-bold text-text-muted group-hover/time:text-accent transition-colors">
-              Completed {new Date(todo.completedAt).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </span>
-          </button>
+        {todo.completed && (
+          <div className="flex items-center gap-2 opacity-40">
+            {todo.createdBy && (
+              <div
+                title={`Added by ${todo.createdBy}`}
+                className={`w-4 h-4 rounded-full bg-gradient-to-br ${USER_COLORS[todo.createdBy] ?? 'from-slate-500 to-slate-600'} flex items-center justify-center text-[7px] font-bold text-white shrink-0`}
+              >
+                {todo.createdBy[0]}
+              </div>
+            )}
+            {todo.completedAt && (
+              <button
+                onClick={onEdit}
+                className="flex items-center gap-1.5 hover:opacity-70 transition-opacity group/time text-left"
+              >
+                <span className="text-[9px] uppercase tracking-wider font-bold text-text-muted group-hover/time:text-accent transition-colors">
+                  Completed {new Date(todo.completedAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </button>
+            )}
+          </div>
         )}
         
         {!todo.completed && (
           <div className="flex flex-wrap items-center gap-3">
+            {todo.createdBy && (
+              <div
+                title={`Added by ${todo.createdBy}`}
+                className={`w-5 h-5 rounded-full bg-gradient-to-br ${USER_COLORS[todo.createdBy] ?? 'from-slate-500 to-slate-600'} flex items-center justify-center text-[8px] font-bold text-white shrink-0`}
+              >
+                {todo.createdBy[0]}
+              </div>
+            )}
             <span className={`text-[9px] uppercase tracking-[0.15em] font-bold px-2 py-0.5 rounded-md border ${
               todo.priority === 'high' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
               todo.priority === 'medium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
