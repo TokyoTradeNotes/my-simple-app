@@ -15,10 +15,13 @@ serve(async (req) => {
     if (!scriptUrl) throw new Error('GOOGLE_SCRIPT_URL not set');
 
     const payload = await req.json();
-    const url = new URL(scriptUrl);
-    url.searchParams.set('data', JSON.stringify(payload));
 
-    await fetch(url.toString(), { method: 'GET' });
+    await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      redirect: 'follow',
+    });
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
