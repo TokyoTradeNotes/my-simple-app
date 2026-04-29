@@ -15,12 +15,9 @@ interface SheetPayload {
 export async function logToSheet(payload: SheetPayload): Promise<void> {
   if (!SCRIPT_URL) return;
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload),
-      redirect: 'follow',
-    });
+    const url = new URL(SCRIPT_URL);
+    url.searchParams.set('data', JSON.stringify(payload));
+    await fetch(url.toString(), { method: 'GET', mode: 'no-cors' });
   } catch {
     // fire-and-forget — sheet sync failure never breaks the app
   }
