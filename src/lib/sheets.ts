@@ -1,4 +1,6 @@
-const SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL as string | undefined;
+const EDGE_URL = import.meta.env.VITE_SUPABASE_URL
+  ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sheet-logger`
+  : undefined;
 
 interface SheetPayload {
   id: string;
@@ -13,11 +15,13 @@ interface SheetPayload {
 }
 
 export async function logToSheet(payload: SheetPayload): Promise<void> {
-  if (!SCRIPT_URL) return;
+  if (!EDGE_URL) return;
   try {
-    const url = new URL(SCRIPT_URL);
-    url.searchParams.set('data', JSON.stringify(payload));
-    await fetch(url.toString(), { method: 'GET' });
+    await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
   } catch {
     // fire-and-forget — sheet sync failure never breaks the app
   }
