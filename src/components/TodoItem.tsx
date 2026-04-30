@@ -8,6 +8,19 @@ import { Check, Trash2, Circle, Edit3, Calendar, Bell, Tag as TagIcon } from 'lu
 import React from 'react';
 import { Todo } from '../types';
 
+function getDaysLeft(dueDate: string): { label: string; color: string } {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+  const diff = Math.round((due.getTime() - today.getTime()) / 86400000);
+  if (diff < 0) return { label: `${Math.abs(diff)}d overdue`, color: 'text-rose-500' };
+  if (diff === 0) return { label: 'Today', color: 'text-amber-400' };
+  if (diff === 1) return { label: '1 day left', color: 'text-amber-400' };
+  if (diff <= 3) return { label: `${diff} days left`, color: 'text-amber-400' };
+  return { label: `${diff} days left`, color: 'text-text-muted' };
+}
+
 const USER_COLORS: Record<string, string> = {
   Tokyo: 'from-violet-500 to-indigo-600',
   Hannah: 'from-pink-500 to-rose-500',
@@ -110,14 +123,20 @@ export default function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemP
               {todo.priority} Priority
             </span>
             
-            {todo.dueDate && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary-bg border border-border rounded-md shadow-sm">
-                <Calendar size={10} className="text-accent" />
-                <span className="text-[9px] uppercase tracking-wider font-bold text-text-muted">
-                  {new Date(todo.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </span>
-              </div>
-            )}
+            {todo.dueDate && (() => {
+              const { label, color } = getDaysLeft(todo.dueDate);
+              return (
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary-bg border border-border rounded-md shadow-sm">
+                  <Calendar size={10} className="text-accent" />
+                  <span className="text-[9px] uppercase tracking-wider font-bold text-text-muted">
+                    {new Date(todo.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <span className={`text-[9px] uppercase tracking-wider font-bold ${color}`}>
+                    · {label}
+                  </span>
+                </div>
+              );
+            })()}
 
             {todo.reminder && (
               <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary-bg border border-border rounded-md shadow-sm">

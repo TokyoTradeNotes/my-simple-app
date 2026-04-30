@@ -46,9 +46,6 @@ export default function UserSelect({ onSelect }: UserSelectProps) {
           ))}
         </div>
 
-        <p className="text-[10px] uppercase tracking-widest font-bold text-text-muted/30">
-          Your choice is remembered on this device
-        </p>
       </motion.div>
     </div>
   );
