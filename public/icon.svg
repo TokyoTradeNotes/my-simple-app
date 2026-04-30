@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#16161A"/>
+
+  <!-- Row 1: checked -->
+  <circle cx="150" cy="190" r="34" fill="#6366F1"/>
+  <polyline points="135,190 147,203 168,175" fill="none" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="208" y="178" width="160" height="24" rx="12" fill="#6366F1" opacity="0.5"/>
+
+  <!-- Row 2: checked -->
+  <circle cx="150" cy="275" r="34" fill="#6366F1"/>
+  <polyline points="135,275 147,288 168,260" fill="none" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="208" y="263" width="120" height="24" rx="12" fill="#6366F1" opacity="0.5"/>
+
+  <!-- Row 3: unchecked -->
+  <circle cx="150" cy="360" r="34" fill="none" stroke="#2A2A32" stroke-width="8"/>
+  <rect x="208" y="348" width="175" height="24" rx="12" fill="#2A2A32"/>
+</svg>
