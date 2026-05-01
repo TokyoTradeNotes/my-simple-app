@@ -33,6 +33,28 @@ export default function AddTodo({ onAdd }: AddTodoProps) {
     high: 'bg-rose-500',
   };
 
+  const setQuickDate = (offset: { days?: number; months?: number; years?: number }) => {
+    const d = new Date();
+    if (offset.days) d.setDate(d.getDate() + offset.days);
+    if (offset.months) d.setMonth(d.getMonth() + offset.months);
+    if (offset.years) d.setFullYear(d.getFullYear() + offset.years);
+    setDueDate(d.toISOString().slice(0, 10));
+  };
+
+  const toISODate = (d: Date) => d.toISOString().slice(0, 10);
+
+  const quickDates = [
+    { label: '1W', offset: { days: 7 } },
+    { label: '1M', offset: { months: 1 } },
+    { label: '1Y', offset: { years: 1 } },
+  ].map(({ label, offset }) => {
+    const d = new Date();
+    if (offset.days) d.setDate(d.getDate() + offset.days);
+    if (offset.months) d.setMonth(d.getMonth() + offset.months);
+    if (offset.years) d.setFullYear(d.getFullYear() + offset.years);
+    return { label, value: toISODate(d) };
+  });
+
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="relative group">
@@ -85,7 +107,7 @@ export default function AddTodo({ onAdd }: AddTodoProps) {
               className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-text-main focus:outline-none [color-scheme:dark]"
             />
             {dueDate && (
-              <button 
+              <button
                 type="button"
                 onClick={() => setDueDate('')}
                 className="ml-2 text-text-muted hover:text-rose-500 transition-colors"
@@ -93,6 +115,22 @@ export default function AddTodo({ onAdd }: AddTodoProps) {
                 <X size={12} />
               </button>
             )}
+          </div>
+          <div className="flex gap-1.5">
+            {quickDates.map(({ label, value }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setDueDate(value)}
+                className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${
+                  dueDate === value
+                    ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20'
+                    : 'bg-secondary-bg border-border text-text-muted/60 hover:text-text-main hover:border-accent/40'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
